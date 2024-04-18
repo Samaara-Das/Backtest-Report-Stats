@@ -1,0 +1,39 @@
+As an expert Python software developer, write a Python script to run on Windows OS as an executable file. 
+
+Here are the values that will be accessed from the UI of this script:
+- a destination folder path which contains an excel file. The file in this folder will be called the destination file.
+- a source folder path which contains excel files. The files in this folder will be called the source files.
+- a Word entry input field which receives comma separated words. These words will be called keywords.
+- an input field which accepts a time frame. This will be called the time frame input.
+- a button called "Run"
+- a button called "Stop"
+
+The following is what the script should do.
+1. When the Run button is clicked, the following will happen:
+	a) the input fields will be checked to make sure that no field is empty
+	b) the destination folder path will be checked to find if a destination file exists and if not then create a new destination excel file and give it a name. 
+	c) check if the source folder path exists
+
+2. If any of the above conditions are not fulfilled, an error message will display on the UI. Based on the unfullfilled conditions, the text inside the error message will ask the user to fulfill those conditions. The program will only continue further if all conditions are fulfilled.
+
+2. When minimized the program will minimize to system tray. The program will run as a background service and will automatically start when windows is started. 
+
+3. If the Stop button has been clicked the entire program stops its execution and will start again when the Run button is clicked.
+
+4. Inside the destination file, put each keyword as a new column header only if that keyword did not exist as a column header before.
+
+5. Go to the source folder and find all the files inside that folder which a) are excel files, b) have a different name compared to the destination file's name and c) have not been read.
+
+6. Go through each of those unread excel files and remove their formatting so that just the cell values and images are remaining. 
+
+7. For each excel file, find each keyword in it. 
+
+8. When each keyword is found, find the first cell content to the right of those keywords on the row where those keywords were found. 
+
+9. Add that cell content under the column in the destination file which has the same name as that keyword. 
+
+10. Add a new row in the destination file for each new excel file. 
+
+11. Steps 4 to 9 will execute periodically based on the time frame input. If the time frame input is 1 hour, these steps will run every hour. If it is 15 mins, these steps will run every 15 mins. So on, so forth. 
+
+12. Also add error handling to all the above steps.
