@@ -3,6 +3,7 @@ from tkinter import messagebox, filedialog
 import os, glob
 import threading
 from openpyxl import Workbook, load_workbook
+import openpyxl
 import schedule
 import time
 from pystray import Icon as trayIcon, MenuItem as item, Menu as menu
@@ -37,28 +38,9 @@ def process_files():
     if not check_and_prepare_files():
         return
     
-    # Open destination Excel
-    dest_file_path = os.path.join(destination_path.get(), "result.xlsx")
-    wb_dest = load_workbook(dest_file_path)
-    ws_dest = wb_dest.active
-
-    # Ensure keywords are columns in the destination file
+    # Ensure keywords are extracted from the input
     keyword_list = [keyword.strip() for keyword in keywords.get().split(',')]
     
-    # Identify the current headers
-    current_headers = [cell.value for cell in ws_dest[1] if cell.value is not None]
-
-    # Add new headers if they don't already exist
-    column_to_add = len(current_headers) + 1
-    for keyword in keyword_list:
-        if keyword not in current_headers:
-            ws_dest.cell(row=1, column=column_to_add, value=keyword)
-            current_headers.append(keyword)
-            column_to_add += 1
-    
-    # Save the workbook after adding headers
-    wb_dest.save(dest_file_path)
-
     # Process each source file
     for file in glob.glob(f"{source_path.get()}/*.xlsx"):
         if file.endswith('result.xlsx'):
@@ -66,28 +48,28 @@ def process_files():
 
         wb_src = load_workbook(file, data_only=True)
         ws_src = wb_src.active
-
-        # A dictionary to hold the first found value for each keyword
-        found_values = {keyword: '' for keyword in keyword_list}
         
-        for row in ws_src.iter_rows(min_row=2, values_only=True):
-            for cell in row:
-                if cell in keyword_list and found_values[cell] == '':
-                    # Find the index of the keyword
-                    keyword_index = row.index(cell)
-                    # Assuming the value we need is right after the keyword
-                    if keyword_index + 1 < len(row):
-                        found_values[cell] = row[keyword_index + 1]
-
-        # Append values to the destination workbook
-        new_row = ws_dest.max_row + 1
+        print(f"Processing file: {file}")
+        
+        # Search for each keyword in the file
         for keyword in keyword_list:
-            col_index = current_headers.index(keyword) + 1
-            ws_dest.cell(row=new_row, column=col_index, value=found_values[keyword])
+            found = False
+            for row in ws_src.iter_rows():
+                for cell in row:
+                    if cell.value == keyword:
+                        found = True
+                        # Get the row and column (1-indexed)
+                        row_index = cell.row
+                        col_index = cell.column_letter
+                        print(f"Keyword '{keyword}' found at {col_index}{row_index}")
+                        break
+                if found:
+                    break
+            if not found:
+                print(f"Keyword '{keyword}' not found in file.")
     
-    # Save the workbook after processing each file
-    wb_dest.save(dest_file_path)
-    messagebox.showinfo("Info", "Processing completed successfully!")
+    messagebox.showinfo("Info", "Keyword search completed!")
+
 
 # Define a global running flag
 running = True
