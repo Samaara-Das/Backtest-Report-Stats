@@ -19,28 +19,28 @@ if REMOVE_LOG:
     with open('app_log.log', 'w') as file:
         pass
 
-def get_current_backtest_reports(folder_path):
+def get_current_backtest_reports(source_folder):
     """
     Gets HTML backtest reports in the specified folder.
 
     Args:
-    - folder_path (str): The path to the folder.
+    - source_folder (str): The path to the folder.
 
     Returns:
     - set: A set of file paths.
     """
     try:
-        return {os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith(".htm") or f.endswith(".html")}
+        return {os.path.join(source_folder, f) for f in os.listdir(source_folder) if f.endswith(".htm") or f.endswith(".html")}
     except Exception as e:
-        main_logger.error(f"Error getting current backtest reports from {folder_path}: {e}")
+        main_logger.error(f"Error getting current backtest reports from {source_folder}: {e}")
         raise
 
-def check_for_new_backtest_reports():
+def check_for_new_backtest_reports(source_folder, processed_files):
     """
     Check for new backtest reports in the shared folder and process them.
     """
     try:
-        current_files = get_current_backtest_reports(SHARED_FOLDER_PATH)
+        current_files = get_current_backtest_reports(source_folder)
         new_files = current_files - processed_files
 
         # Process new files
@@ -54,25 +54,35 @@ def check_for_new_backtest_reports():
         main_logger.error(f"Error checking for new files: {e}")
         raise
 
-# Run main code
-if __name__ == '__main__':
+def run_main_script(source_folder, destination_file, stop_event, time_frame):
+    """
+    Main script to process backtest reports.
+
+    Args:
+    - source_folder (str): The path to the source folder containing HTML reports.
+    - destination_file (str): The path to the destination Excel file.
+    - stop_event (threading.Event): Event to signal stopping the script.
+    - time_frame (int): Time frame in minutes for scheduling the checks.
+    """
     try:
-        # initiate Browser
-        browser = browser.Browser(keep_open=True, headless=True)
+        # Initiate Browser
+        browser_instance = browser.Browser(keep_open=True, headless=True)
 
         # Setup the Excel file
-        setup_excel_file(EXCEL_FILE_PATH, titles_and_xpaths)
+        setup_excel_file(destination_file, titles_and_xpaths)
 
         # Process all the existing backtest reports
-        processed_files = get_current_backtest_reports(SHARED_FOLDER_PATH)
+        processed_files = get_current_backtest_reports(source_folder)
         for file_path in processed_files:
-            process_html_file(file_path, browser)
+            if stop_event.is_set():
+                main_logger.info("Script execution stopped.")
+                return
+            process_html_file(file_path, browser_instance)
 
-        # Schedule the check for new backtest reports every hour
-        main_logger.info("Scheduling check for new backtest reports...")
-        schedule.every(1).hour.do(check_for_new_backtest_reports)
+        # Schedule the check for new backtest reports
+        schedule.every(time_frame).minutes.do(check_for_new_backtest_reports, source_folder, processed_files)
 
-        while True:
+        while not stop_event.is_set():
             schedule.run_pending()
             time.sleep(1)  # Wait a bit before checking the schedule again
 
@@ -80,4 +90,4 @@ if __name__ == '__main__':
         main_logger.exception(f'Error in main.py: {e}')
 
     finally:
-        browser.driver.close()
+        browser_instance.driver.close()
