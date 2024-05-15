@@ -6,11 +6,18 @@ import schedule
 from excel_utils import setup_excel_file, EXCEL_FILE_PATH
 from backtest_reports_processor import process_html_file, titles_and_xpaths
 
+REMOVE_LOG = True
+
 # Set up logger for this file
 main_logger = logger_setup.setup_logger(__name__, logger_setup.INFO)
 
 # specify the path to the shared folder which has all the HTML reports
 SHARED_FOLDER_PATH = "D:\\Shared folder of HTML Reports"
+
+# Clean up the log
+if REMOVE_LOG:
+    with open('app_log.log', 'w') as file:
+        pass
 
 def get_current_backtest_reports(folder_path):
     """
