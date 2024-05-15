@@ -1,1 +1,1 @@
-This branch is for merging all back test reports into 1 excel file on the local computer.
+This branch is for extracting data from Excel back test reports into 1 excel file on the local computer. This is unfinished.
