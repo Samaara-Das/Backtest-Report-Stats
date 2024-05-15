@@ -6,8 +6,8 @@ name = "pypi"
 [packages]
 pandas = "*"
 openpyxl = "*"
-pystray = "*"
-pillow = "*"
+selenium = "*"
+webdriver-manager = "*"
 schedule = "*"
 
 [dev-packages]

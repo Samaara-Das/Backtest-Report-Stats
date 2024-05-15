@@ -4,7 +4,7 @@ This was done to avoid repetition of code.
 '''
 
 import logging
-from logging import getLogger, FileHandler, StreamHandler, Formatter
+from logging import getLogger, FileHandler, StreamHandler, Formatter, NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL
 import sys
 
 def setup_logger(logger_name, logger_level, file='app_log.log'):
